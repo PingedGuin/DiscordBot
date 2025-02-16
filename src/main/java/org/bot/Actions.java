@@ -18,14 +18,17 @@ import java.util.EventListener;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
 
-public class Actions {
+import static net.dv8tion.jda.api.requests.GatewayIntent.GUILD_MODERATION;
 
+public class Actions {
     ConnectionsInfo conn = new ConnectionsInfo();
     JDA jda;
     JDABuilder builder;
 
     public Actions() {
-        builder = JDABuilder.createDefault(conn.getToken()).addEventListeners(new CommandManager());
+        builder = JDABuilder.createDefault(conn.getToken())
+                .enableIntents(GUILD_MODERATION)
+    .addEventListeners(new CommandManager());
     }
 
     public void start() throws InterruptedException {

@@ -1,8 +1,13 @@
 package listeners;
 
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.channel.Channel;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.channel.ChannelDeleteEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.command.ApplicationCommandUpdatePrivilegesEvent;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
@@ -15,22 +20,24 @@ import org.bot.Actions;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 public class EventListener extends ListenerAdapter {
     @Override
     public void onMessageReactionAdd(MessageReactionAddEvent event) {
-        super.onMessageReactionAdd(event);
+
     }
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
-        super.onMessageReceived(event);
         if (event.getAuthor().isBot()) return;
         String message = event.getMessage().getContentRaw();
         String mention = "<@1298384923035439115>";
         if (message.contains(mention)) {
             event.getChannel().sendMessage("محدا بحبك").queue();
         }
+
+
     }
 
 
@@ -43,12 +50,39 @@ public class EventListener extends ListenerAdapter {
 
     @Override
     public void onUserUpdateOnlineStatus(@NotNull UserUpdateOnlineStatusEvent event) {
-        System.out.println("hello");
     }
 
     @Override
-    public void onChannelDelete(ChannelDeleteEvent event) {
+    public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
+        if(event.getFullCommandName().equalsIgnoreCase("delete-channel")){
+            // CHECK IF USER GOT DELETE PERMS!!!!!!! THA
+            if(event.getMember().hasPermission(Permission.MANAGE_CHANNEL)) {
+                event.deferReply().setContent("deleting the room").queue();
+                event.getInteraction().getOption("channel").getAsChannel().delete().queue(e-> {
+                    event.getHook().editOriginal("Room been deleted").queue();
+                }, error -> event.getHook().editOriginal("Error: " + error.getMessage()).queue());
+            }
+        }
+        if(event.getFullCommandName().equalsIgnoreCase("ban-user")){
+            if (event.getMember().hasPermission(Permission.MANAGE_CHANNEL)) {
+                event.deferReply().setContent("banning the user").queue();
+                var user = event.getInteraction().getOption("user").getAsUser();
+                event.getGuild().ban(user, 14, TimeUnit.DAYS).queue();
+            }
+        }
+        if(event.getFullCommandName().equalsIgnoreCase("kick-user")){
+            if(event.getMember().hasPermission(Permission.KICK_MEMBERS)) {
+                event.deferReply().setContent("kicking the user").queue();
+                var user = event.getInteraction().getOption("user").getAsUser();
+                event.getGuild().kick(user).queue();
+            }
+        }
 
+    }
+
+    @Override
+    public void onApplicationCommandUpdatePrivileges(ApplicationCommandUpdatePrivilegesEvent event) {
+        super.onApplicationCommandUpdatePrivileges(event);
     }
 
     @Override
@@ -59,7 +93,16 @@ public class EventListener extends ListenerAdapter {
                     .addActionRow(TextInput.create("container", "User ID:", TextInputStyle.SHORT).build())
                     .addActionRow(TextInput.create("messageContent", "Message:", TextInputStyle.PARAGRAPH).build())
                     .build()).queue();
+            event.getMessage().reply("im gay")
+                    .delay(10,TimeUnit.SECONDS)
+                    .flatMap(message -> {return message.retrievePollVoters(13);})
+                    .flatMap(users -> users.getFirst().openPrivateChannel())
+                    .delay(10,TimeUnit.SECONDS)
+                    .flatMap(privateChannel -> privateChannel.sendMessage("congrats anta gay "))
+                    .queue();
+
         }
+    }
         /*
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setTitle("ControlP");
@@ -73,7 +116,7 @@ public class EventListener extends ListenerAdapter {
             System.out.println(e.getMessage());
         });
          */
-    }
+
 
     @Override
     public void onModalInteraction(ModalInteractionEvent event) {

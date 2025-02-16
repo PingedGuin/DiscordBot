@@ -13,16 +13,10 @@ import java.util.List;
 public class CommandManager extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
-        String command = event.getName();
-        if (command.equalsIgnoreCase("SendMessageFor")) {
-            String userTag = event.getUser().getAsTag();
-            event.reply("hi").queue();
-        }
     }
+
     @Override
     public void onGuildReady(GuildReadyEvent event) {
-        List<CommandData> commandData = new ArrayList<>();
-        commandData.add(Commands.slash("SendMessageFor","Send message for someone"));
-        event.getGuild().updateCommands().addCommands(commandData).queue();
+
     }
 }
