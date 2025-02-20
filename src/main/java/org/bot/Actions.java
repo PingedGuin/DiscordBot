@@ -22,7 +22,7 @@ import static net.dv8tion.jda.api.requests.GatewayIntent.GUILD_MODERATION;
 
 public class Actions {
     ConnectionsInfo conn = new ConnectionsInfo();
-    JDA jda;
+    static JDA jda;
     JDABuilder builder;
 
     public Actions() {
@@ -46,6 +46,16 @@ public class Actions {
             System.out.println("User not found");
         }
     }
+
+    public static User getUserByID(String ID) {
+        try {
+            return jda.retrieveUserById(ID).complete();
+        } catch (Exception e) {
+            System.out.println("Error retrieving user: " + e.getMessage());
+            return null;
+        }
+    }
+
     public Actions status(){
         builder.setActivity(Activity.watching("You"));
         builder.setStatus(OnlineStatus.ONLINE);
@@ -86,17 +96,6 @@ public class Actions {
             executor.shutdown();
         });
     }
-   /* public void messageWithBottom(String ChannelID, String Message,String buttonLabel) {
-        TextChannel channel = jda.getTextChannelById(ChannelID);
-                if (channel != null) {
-                channel.sendMessage(Message)
-                        .setActionRow(
-                                Button.secondary("button1",buttonLabel))
-                        .queue();
-                }
-    }
-    */
-
     public JDA getJda() {
         return jda;
     }

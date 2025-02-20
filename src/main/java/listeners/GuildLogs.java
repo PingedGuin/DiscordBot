@@ -16,8 +16,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-public class botEvents extends ListenerAdapter {
+public class GuildLogs extends ListenerAdapter {
     public static final String LOG_ID_CHANNEL = "1340791397036457984";
+
+
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {

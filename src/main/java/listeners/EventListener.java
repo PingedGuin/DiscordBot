@@ -1,17 +1,12 @@
 package listeners;
 
+import Properties.Anonymous;
+import Properties.TicTacToeGame;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.channel.Channel;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
-import net.dv8tion.jda.api.events.channel.ChannelDeleteEvent;
-import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
-import net.dv8tion.jda.api.events.interaction.command.ApplicationCommandUpdatePrivilegesEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
-import net.dv8tion.jda.api.events.user.update.UserUpdateOnlineStatusEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
@@ -19,14 +14,12 @@ import net.dv8tion.jda.api.interactions.modals.Modal;
 import org.bot.Actions;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 public class EventListener extends ListenerAdapter {
-    @Override
-    public void onMessageReactionAdd(MessageReactionAddEvent event) {
-
-    }
+    HashMap<String, TicTacToeGame> toeGameHashMap = new HashMap<>();
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
@@ -37,86 +30,84 @@ public class EventListener extends ListenerAdapter {
             event.getChannel().sendMessage("محدا بحبك").queue();
         }
 
-
-    }
-
-
-    @Override
-    public void onGuildMemberJoin(@NotNull GuildMemberJoinEvent event) {
-        super.onGuildMemberJoin(event);
-        String avatar = event.getUser().getEffectiveAvatarUrl();
-        System.out.println(avatar);
-    }
-
-    @Override
-    public void onUserUpdateOnlineStatus(@NotNull UserUpdateOnlineStatusEvent event) {
     }
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
-        if(event.getFullCommandName().equalsIgnoreCase("delete-channel")){
-            // CHECK IF USER GOT DELETE PERMS!!!!!!! THA
-            if(event.getMember().hasPermission(Permission.MANAGE_CHANNEL)) {
+        if (event.getFullCommandName().equalsIgnoreCase("delete-channel")) {
+            if (event.getMember().hasPermission(Permission.MANAGE_CHANNEL)) {
                 event.deferReply().setContent("deleting the room").queue();
-                event.getInteraction().getOption("channel").getAsChannel().delete().queue(e-> {
+                event.getInteraction().getOption("channel").getAsChannel().delete().queue(e -> {
                     event.getHook().editOriginal("Room been deleted").queue();
                 }, error -> event.getHook().editOriginal("Error: " + error.getMessage()).queue());
             }
         }
-        if(event.getFullCommandName().equalsIgnoreCase("ban-user")){
+        if (event.getFullCommandName().equalsIgnoreCase("ban-user")) {
             if (event.getMember().hasPermission(Permission.MANAGE_CHANNEL)) {
                 event.deferReply().setContent("banning the user").queue();
                 var user = event.getInteraction().getOption("user").getAsUser();
                 event.getGuild().ban(user, 14, TimeUnit.DAYS).queue();
             }
         }
-        if(event.getFullCommandName().equalsIgnoreCase("kick-user")){
-            if(event.getMember().hasPermission(Permission.KICK_MEMBERS)) {
+        if (event.getFullCommandName().equalsIgnoreCase("kick-user")) {
+            if (event.getMember().hasPermission(Permission.KICK_MEMBERS)) {
                 event.deferReply().setContent("kicking the user").queue();
                 var user = event.getInteraction().getOption("user").getAsUser();
                 event.getGuild().kick(user).queue();
             }
         }
-
-    }
-
-    @Override
-    public void onApplicationCommandUpdatePrivileges(ApplicationCommandUpdatePrivilegesEvent event) {
-        super.onApplicationCommandUpdatePrivileges(event);
+        if (event.getFullCommandName().equalsIgnoreCase("start-game")) {
+            event.deferReply().setContent("starting the game").queue();
+            event.getChannel().sendMessage("Starting the game").queue(Message -> {
+                TicTacToeGame ticTacToeGame = new TicTacToeGame(Message);
+                toeGameHashMap.put(Message.getId(), ticTacToeGame);
+            });
+        }
+        if (event.getFullCommandName().equalsIgnoreCase("anonymous-message")) {
+            Anonymous.sendAnonymousMessage(event);
+        }
     }
 
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
         //event.deferReply(true).setContent("Send").queue();
-        if (event.getButton().getId().equalsIgnoreCase("Send")) {
+        if (event.getButton().getId().equals("Send")) {
             event.replyModal(Modal.create("title", "Anonymous message")
-                    .addActionRow(TextInput.create("container", "User ID:", TextInputStyle.SHORT).build())
+                    .addActionRow(TextInput.create("container", "User    ID:", TextInputStyle.SHORT).build())
                     .addActionRow(TextInput.create("messageContent", "Message:", TextInputStyle.PARAGRAPH).build())
                     .build()).queue();
             event.getMessage().reply("im gay")
-                    .delay(10,TimeUnit.SECONDS)
-                    .flatMap(message -> {return message.retrievePollVoters(13);})
+                    .delay(10, TimeUnit.SECONDS)
+                    .flatMap(message -> {
+                        return message.retrievePollVoters(13);
+                    })
                     .flatMap(users -> users.getFirst().openPrivateChannel())
-                    .delay(10,TimeUnit.SECONDS)
+                    .delay(10, TimeUnit.SECONDS)
                     .flatMap(privateChannel -> privateChannel.sendMessage("congrats anta gay "))
                     .queue();
 
         }
-    }
-        /*
-        EmbedBuilder embedBuilder = new EmbedBuilder();
-        embedBuilder.setTitle("ControlP");
-        embedBuilder.setColor(Color.blue);
-        embedBuilder.setDescription("Send a DM message for Friends");
-        embedBuilder.setImage("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfVGi6KfC7gsHmLvbFH_DMGWnfruAzHOg_jQ&s");
-        Button SendMessage = Button.primary("Send", Emoji.fromUnicode("🟣"));
-        event.getChannel().sendMessageEmbeds(embedBuilder.build()).setActionRow(SendMessage).queue(e -> {
-            System.out.println("send");
-        },e-> {
-            System.out.println(e.getMessage());
-        });
-         */
+        if (event.getButton().getId().equalsIgnoreCase("join")) {
+            var player = event.getMember();
+            var gameId = event.getMessage().getId();
+            var game = toeGameHashMap.get(gameId);
+            if (game.setPlayer(player)) {
+                event.deferReply(true).setContent("You have joined the game").queue();
+            } else {
+                event.deferReply().setContent("game is full").queue();
+            }
 
+        }
+        if (toeGameHashMap.containsKey(event.getMessage().getId()) && !event.getButton().getId().equalsIgnoreCase("join")) {
+            TicTacToeGame game = toeGameHashMap.get(event.getMessage().getId());
+            game.changeGameStatus(event.getComponentId());
+            event.deferEdit().queue();
+        }
+        System.out.println(event.getButton().getId());
+        if (event.getButton().getId().equalsIgnoreCase("anonymous-sender")) {
+            Anonymous.openModal(event);
+        }
+    }
 
     @Override
     public void onModalInteraction(ModalInteractionEvent event) {
@@ -128,5 +119,11 @@ public class EventListener extends ListenerAdapter {
             Actions actions = new Actions();
             actions.sendDmMessage(inputID, message);
         }
+        if(event.getModalId().equals("anonymous_message")){
+            String memberId = event.getValue("personId").getAsString();
+            String message = event.getValue("message_content").getAsString();
+            Anonymous.sendDmMessage(memberId,message);
+        }
     }
+
 }

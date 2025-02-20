@@ -1,20 +1,19 @@
 package org.bot;
-
-import command.CommandManager;
-import listeners.botEvents;
+import Properties.DeepSeekBot;
+import listeners.GuildLogs;
 import listeners.EventListener;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 
 public class Bot {
     public static void main(String[] args) throws InterruptedException {
-        CommandManager manager = new CommandManager();
         Actions actions = new Actions();
         actions.permission()
                 .status()
                 .start();
         actions.getJda().addEventListener(new EventListener());
-        actions.getJda().addEventListener(new botEvents());
+        actions.getJda().addEventListener(new GuildLogs());
+        actions.getJda().addEventListener(new DeepSeekBot());
 
         var deleteCommand = Commands.slash("delete-channel","delete channel")
                 .addOption(OptionType.CHANNEL,"channel","delete Channel");
@@ -22,14 +21,14 @@ public class Bot {
                 .addOption(OptionType.USER,"user","ban User");
         var kickUser = Commands.slash("kick-user","kick User")
                 .addOption(OptionType.USER,"user","Kick User");
+        var startGame = Commands.slash("start-game","start game");
+        var AnonymousMessage = Commands.slash("anonymous-message","anonymous message");
 
-        actions.getJda().updateCommands().addCommands(deleteCommand, banUser,kickUser).queue(e -> {
+        actions.getJda().updateCommands().addCommands(deleteCommand, banUser,kickUser,startGame,AnonymousMessage).queue(e -> {
             System.out.println("done:");
             e.forEach(see -> System.out.println(see.getAsMention()));
         }, error -> {
             System.out.println("error " + error.getMessage());
         });
-        var channel = actions.getJda().getTextChannelById("1249820220617523240");
-
     }
 }
