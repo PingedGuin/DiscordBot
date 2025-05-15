@@ -31,7 +31,7 @@ public class Anonymous extends ListenerAdapter {
     public static void openModal(ButtonInteractionEvent event) {
         Modal modal = Modal.create("anonymous_message", "Send Anonymous Message")
                 .addActionRow(TextInput
-                        .create("personId", "Persson ID:", TextInputStyle.SHORT).setPlaceholder("Example: 29418839824132")
+                        .create("personId", "User ID:", TextInputStyle.SHORT).setPlaceholder("Example: 29418839824132")
                         .setRequired(true).build())
                 .addActionRow(TextInput.create("message_content", "Message:", TextInputStyle.PARAGRAPH).
                         setRequired(true).build()).build();

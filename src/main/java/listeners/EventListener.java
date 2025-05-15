@@ -29,9 +29,7 @@ public class EventListener extends ListenerAdapter {
         if (message.contains(mention)) {
             event.getChannel().sendMessage("محدا بحبك").queue();
         }
-
     }
-
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (event.getFullCommandName().equalsIgnoreCase("delete-channel")) {
@@ -66,6 +64,7 @@ public class EventListener extends ListenerAdapter {
         if (event.getFullCommandName().equalsIgnoreCase("anonymous-message")) {
             Anonymous.sendAnonymousMessage(event);
         }
+
     }
 
     @Override
@@ -83,9 +82,8 @@ public class EventListener extends ListenerAdapter {
                     })
                     .flatMap(users -> users.getFirst().openPrivateChannel())
                     .delay(10, TimeUnit.SECONDS)
-                    .flatMap(privateChannel -> privateChannel.sendMessage("congrats anta gay "))
+                    .flatMap(privateChannel -> privateChannel.sendMessage("congrats"))
                     .queue();
-
         }
         if (event.getButton().getId().equalsIgnoreCase("join")) {
             var player = event.getMember();
@@ -124,6 +122,7 @@ public class EventListener extends ListenerAdapter {
             String message = event.getValue("message_content").getAsString();
             Anonymous.sendDmMessage(memberId,message);
         }
+        event.deferReply(true).setContent("Sending The Message").queue();
     }
 
 }

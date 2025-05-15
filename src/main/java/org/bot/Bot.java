@@ -1,5 +1,4 @@
 package org.bot;
-import Properties.DeepSeekBot;
 import listeners.GuildLogs;
 import listeners.EventListener;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -13,7 +12,6 @@ public class Bot {
                 .start();
         actions.getJda().addEventListener(new EventListener());
         actions.getJda().addEventListener(new GuildLogs());
-        actions.getJda().addEventListener(new DeepSeekBot());
 
         var deleteCommand = Commands.slash("delete-channel","delete channel")
                 .addOption(OptionType.CHANNEL,"channel","delete Channel");
@@ -22,9 +20,12 @@ public class Bot {
         var kickUser = Commands.slash("kick-user","kick User")
                 .addOption(OptionType.USER,"user","Kick User");
         var startGame = Commands.slash("start-game","start game");
+
         var AnonymousMessage = Commands.slash("anonymous-message","anonymous message");
 
-        actions.getJda().updateCommands().addCommands(deleteCommand, banUser,kickUser,startGame,AnonymousMessage).queue(e -> {
+        var adminSub = Commands.slash("admin-submission","admin sub")
+                        .addOption(OptionType.CHANNEL,"channel","Admin Submission");
+        actions.getJda().updateCommands().addCommands(deleteCommand, banUser,kickUser,startGame,AnonymousMessage,adminSub).queue(e -> {
             System.out.println("done:");
             e.forEach(see -> System.out.println(see.getAsMention()));
         }, error -> {
